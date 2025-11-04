@@ -146,3 +146,7 @@ Environment variables are used to securely manage API keys, database URLs, and o
 1. Duplicate .env.example → .env.local
 2. Fill in actual credentials.
 3. Run npm run dev to start the app.
+
+### Project Workflow Setup
+
+This repository demonstrates a standardized Git workflow with defined branch naming conventions, a PR template, a review checklist, and branch protection rules to ensure consistency, collaboration, and high code quality across the team.
