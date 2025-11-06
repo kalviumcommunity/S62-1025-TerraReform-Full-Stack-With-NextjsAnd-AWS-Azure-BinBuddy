@@ -43,7 +43,20 @@
       "prettier --write"
     ]
   },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  }
+  "description": "BinBuddy is a smart, AI-driven waste management web application that encourages community-led waste segregation.  \r It provides real-time reporting, AI-based waste verification, and gamified incentives to promote sustainable waste practices.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalviumcommunity/S62-1025-TerraReform-Full-Stack-With-NextjsAnd-AWS-Azure-BinBuddy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kalviumcommunity/S62-1025-TerraReform-Full-Stack-With-NextjsAnd-AWS-Azure-BinBuddy/issues"
+  },
+  "homepage": "https://github.com/kalviumcommunity/S62-1025-TerraReform-Full-Stack-With-NextjsAnd-AWS-Azure-BinBuddy#readme"
 }
