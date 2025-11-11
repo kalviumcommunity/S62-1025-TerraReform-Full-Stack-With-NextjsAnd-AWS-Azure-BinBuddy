@@ -900,3 +900,4 @@ This part of the project implements a centralized error-handling system using a 
 In development, detailed logs and stack traces aid debugging, while in production, user-safe responses hide sensitive details to maintain security and trust.
 The approach improves debugging efficiency, traceability, and user confidence through standardized error reporting and controlled visibility.
 Screenshots and logs from both environments demonstrate its real-world reliability and impact.
+
