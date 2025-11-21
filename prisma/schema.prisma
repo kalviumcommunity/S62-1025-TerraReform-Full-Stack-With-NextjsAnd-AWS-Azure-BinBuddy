@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,33 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  user
-  admin
-  volunteer
-  authority
-}
-
-enum ReportStatus {
-  PENDING
-  VERIFIED
-  REJECTED
-}
-
 model User {
-  id            String          @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String          @unique
+  email         String         @unique
   password      String?
-  googleId      String?         @unique
-  points        Int             @default(0)
-  state         String?
+  googleId      String?        @unique
+  points        Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  role          Role           @default(user)
   city          String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  role          Role            @default(user)
-  
-  // Relations
+  state         String?
   images        Image[]
   notifications Notification[]
   refreshTokens RefreshToken[]
@@ -47,66 +31,58 @@ model User {
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  token     String   @unique
+  token     String    @unique
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   revokedAt DateTime?
-  
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model Report {
-  id            String   @id @default(cuid())
-  imageUrl      String
-  imageHash     String?  @unique
-  category      String
-  note          String?
-  lat           Float
-  lng           Float
-  
-  // Legacy fields
-  location      String?
-  latitude      Float?
-  longitude     Float?
-  wasteType     String?
-  wasteCategory String?
-  
-  status      ReportStatus @default(PENDING)
-  verifiedAt  DateTime?
-  verifiedBy  String? // Volunteer ID
-  remarks     String?
+  id              String       @id @default(cuid())
+  imageUrl        String
+  location        String?
+  latitude        Float?
+  longitude       Float?
+  wasteType       String?
+  wasteCategory   String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  category        String
+  imageHash       String?      @unique
+  lat             Float
+  lng             Float
+  note            String?
+  reporterId      String
   rejectionReason String?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  // Relations
-  reporterId    String
-  reporter      User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-  images        Image[]
-  task          Task?
+  remarks         String?
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  status          ReportStatus @default(PENDING)
+  images          Image[]
+  reporter        User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  task            Task?
 
   @@index([reporterId])
   @@index([status])
 }
 
 model Task {
-  id          String   @id @default(cuid())
-  reportId    String   @unique
-  status      String   @default("available")
+  id          String    @id @default(cuid())
+  reportId    String    @unique
+  status      String    @default("available")
   claimedBy   String?
   claimedAt   DateTime?
   completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  collector   User?    @relation(fields: [claimedBy], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  collector   User?     @relation(fields: [claimedBy], references: [id])
+  report      Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([claimedBy])
@@ -119,7 +95,6 @@ model Reward {
   action      String
   description String
   createdAt   DateTime @default(now())
-  
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -133,7 +108,6 @@ model Notification {
   message   String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-  
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -147,10 +121,22 @@ model Image {
   uploadedBy String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
   report     Report?  @relation(fields: [reportId], references: [id], onDelete: Cascade)
   user       User?    @relation(fields: [uploadedBy], references: [id])
 
   @@index([reportId])
   @@index([uploadedBy])
+}
+
+enum Role {
+  user
+  admin
+  volunteer
+  authority
+}
+
+enum ReportStatus {
+  PENDING
+  VERIFIED
+  REJECTED
 }

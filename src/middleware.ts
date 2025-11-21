@@ -14,6 +14,7 @@ const ROLE_PERMISSIONS: Record<string, RegExp[]> = {
     /^\/api\/user\/profile/, // View own profile
   ],
   volunteer: [
+    /^\/api\/volunteer/,
     /^\/api\/reports\/.*\/verify/, // Verify reports
     /^\/api\/reports\/pending/, // View pending reports
     /^\/api\/uploads\/presign/, // Upload images
@@ -50,7 +51,13 @@ export function middleware(req: NextRequest) {
   const authPages = ["/login", "/signup", "/"];
 
   // Protected pages that require authentication
-  const protectedPages = ["/dashboard", "/dashboard/user/report"];
+  const protectedPages = [
+    "/dashboard",
+    "/dashboard/user/report",
+    "/dashboard/volunteer",
+    "/dashboard/volunteer/verify",
+    "/dashboard/volunteer/history",
+  ];
 
   // Check authentication status
   const { success, user } = verifyToken(req);

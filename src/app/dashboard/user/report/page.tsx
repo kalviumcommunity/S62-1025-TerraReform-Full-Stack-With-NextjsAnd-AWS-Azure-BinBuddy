@@ -80,7 +80,6 @@ export default function ReportPage() {
     try {
       if (!file) {
         throw new Error("Please select a file");
-        s;
       }
 
       if (formData.lat === 0 || formData.lng === 0) {
