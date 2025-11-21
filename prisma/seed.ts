@@ -127,9 +127,7 @@ async function main() {
       location: "Connaught Place, New Delhi",
       wasteType: "plastic",
       wasteCategory: "recyclable",
-      verified: true,
       status: "VERIFIED",
-      verifiedCount: 1,
       reporterId: user1.id, // ← CHANGED from userId to reporterId
     },
   });
@@ -147,9 +145,7 @@ async function main() {
       location: "Karol Bagh, New Delhi",
       wasteType: "organic",
       wasteCategory: "non-recyclable",
-      verified: true,
       status: "VERIFIED",
-      verifiedCount: 1,
       reporterId: user2.id, // ← CHANGED from userId to reporterId
     },
   });
@@ -167,9 +163,7 @@ async function main() {
       location: "India Gate, New Delhi",
       wasteType: "metal",
       wasteCategory: "recyclable",
-      verified: false,
       status: "PENDING",
-      verifiedCount: 0,
       reporterId: user3.id, // ← CHANGED from userId to reporterId
     },
   });
