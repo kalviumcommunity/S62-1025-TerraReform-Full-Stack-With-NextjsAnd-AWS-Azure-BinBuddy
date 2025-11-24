@@ -24,7 +24,7 @@ model User {
   refreshTokens RefreshToken[]
   reports       Report[]
   rewards       Reward[]
-
+  volunteerRequest  VolunteerRequest?
   @@index([email])
   @@index([points])
 }
@@ -107,7 +107,20 @@ model Notification {
   @@index([userId])
   @@index([read])
 }
-
+model VolunteerRequest {
+  id          Int                      @id @default(autoincrement())
+  userId      String                      @unique
+  user        User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      VolunteerRequestStatus   @default(PENDING)
+  requestedAt DateTime                 @default(now())
+  reviewedAt  DateTime?
+  reviewedBy  String?
+  reviewNotes String?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  
+  @@map("volunteer_requests")
+}
 model Image {
   id         String   @id @default(cuid())
   url        String
@@ -132,5 +145,10 @@ enum Role {
 enum ReportStatus {
   PENDING
   VERIFIED
+  REJECTED
+}
+enum VolunteerRequestStatus {
+  PENDING
+  APPROVED
   REJECTED
 }
