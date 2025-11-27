@@ -26,7 +26,7 @@ export function ProtectedRoute({
     if (!user && !isLoading) {
       fetchUser();
     }
-  }, [user, isLoading, fetchUser]);
+  }, [user, isLoading]);
 
   useEffect(() => {
     // Wait for user data to load
