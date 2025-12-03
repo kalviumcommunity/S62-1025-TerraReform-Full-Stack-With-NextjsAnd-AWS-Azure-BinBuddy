@@ -1,3 +1,4 @@
+// src/app/dashboard/user/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -14,6 +15,7 @@ import {
   AlertCircle,
   Calendar,
   MapPin,
+  ChevronRight,
 } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 
@@ -98,7 +100,7 @@ export default function UserDashboardPage() {
                 </div>
                 <span className="text-sm font-medium text-emerald-400">
                   +
-                  {stats.verified > 0
+                  {stats.total > 0
                     ? Math.round((stats.verified / stats.total) * 100)
                     : 0}
                   %
@@ -130,8 +132,215 @@ export default function UserDashboardPage() {
           </div>
         </div>
 
+        {/* Current Report Tracking - Only show if there's a pending/in-progress report */}
+        {reports.length > 0 &&
+          reports.some(
+            (r) =>
+              r.status === "PENDING" ||
+              r.status === "VERIFIED" ||
+              r.status === "SCHEDULED" ||
+              r.status === "IN_PROGRESS"
+          ) && (
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">
+                  Current Report Tracking
+                </h3>
+                <Link
+                  href={`/dashboard/user/reports/${reports.find((r) => r.status === "PENDING" || r.status === "VERIFIED" || r.status === "SCHEDULED" || r.status === "IN_PROGRESS")?.id}`}
+                  className="text-emerald-400 hover:text-emerald-300 text-sm font-medium flex items-center gap-1"
+                >
+                  View Details
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              {(() => {
+                const activeReport = reports.find(
+                  (r) =>
+                    r.status === "PENDING" ||
+                    r.status === "VERIFIED" ||
+                    r.status === "SCHEDULED" ||
+                    r.status === "IN_PROGRESS"
+                );
+
+                if (!activeReport) return null;
+
+                const steps = [
+                  {
+                    label: "Report Submitted",
+                    description: "Your waste report has been submitted",
+                    status: "PENDING",
+                    icon: FileText,
+                    completed: true,
+                  },
+                  {
+                    label: "Verification",
+                    description:
+                      "Community volunteers are verifying your report",
+                    status: "VERIFIED",
+                    icon: CheckCircle,
+                    completed:
+                      activeReport.status === "VERIFIED" ||
+                      activeReport.status === "SCHEDULED" ||
+                      activeReport.status === "IN_PROGRESS",
+                  },
+                  {
+                    label: "Pickup Scheduled",
+                    description: "Authority has scheduled waste collection",
+                    status: "SCHEDULED",
+                    icon: Calendar,
+                    completed:
+                      activeReport.status === "SCHEDULED" ||
+                      activeReport.status === "IN_PROGRESS",
+                  },
+                  {
+                    label: "Collection in Progress",
+                    description: "Waste collection vehicle is on the way",
+                    status: "IN_PROGRESS",
+                    icon: TrendingUp,
+                    completed: activeReport.status === "IN_PROGRESS",
+                  },
+                ];
+
+                return (
+                  <div className="relative">
+                    <div className="flex items-start justify-between gap-4">
+                      {steps.map((step, index) => {
+                        const Icon = step.icon;
+                        const isActive = step.status === activeReport.status;
+
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-start flex-1 relative"
+                          >
+                            {/* Connecting Line */}
+                            {index < steps.length - 1 && (
+                              <div
+                                className={`absolute left-[50%] top-[30px] w-full h-0.5 -ml-2 ${
+                                  step.completed && steps[index + 1].completed
+                                    ? "bg-emerald-500"
+                                    : "bg-slate-700"
+                                }`}
+                                style={{ width: "calc(100% + 2rem)" }}
+                              />
+                            )}
+
+                            {/* Step Content */}
+                            <div className="flex flex-col items-center w-full relative z-10">
+                              <div
+                                className={`p-4 rounded-xl border-2 transition-all mb-3 ${
+                                  step.completed
+                                    ? "bg-emerald-500/10 border-emerald-500"
+                                    : "bg-slate-800 border-slate-700"
+                                }`}
+                              >
+                                <Icon
+                                  className={`w-6 h-6 ${
+                                    step.completed
+                                      ? "text-emerald-400"
+                                      : "text-slate-500"
+                                  }`}
+                                />
+                              </div>
+                              <h4
+                                className={`text-base font-semibold text-center mb-1 ${
+                                  step.completed
+                                    ? "text-white"
+                                    : "text-slate-500"
+                                }`}
+                              >
+                                {step.label}
+                              </h4>
+                              <p
+                                className={`text-xs text-center ${
+                                  step.completed
+                                    ? "text-slate-400"
+                                    : "text-slate-600"
+                                }`}
+                              >
+                                {step.description}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="mt-6 pt-4 border-t border-slate-700 flex items-center justify-between text-sm">
+                <div>
+                  <span className="text-slate-400">Report ID: </span>
+                  <span className="text-white font-mono">
+                    {reports
+                      .find(
+                        (r) =>
+                          r.status === "PENDING" ||
+                          r.status === "VERIFIED" ||
+                          r.status === "SCHEDULED" ||
+                          r.status === "IN_PROGRESS"
+                      )
+                      ?.id.slice(0, 12)}
+                    ...
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Category: </span>
+                  <span className="text-white capitalize">
+                    {reports
+                      .find(
+                        (r) =>
+                          r.status === "PENDING" ||
+                          r.status === "VERIFIED" ||
+                          r.status === "SCHEDULED" ||
+                          r.status === "IN_PROGRESS"
+                      )
+                      ?.category.toLowerCase()}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Status: </span>
+                  <span
+                    className={`font-semibold ${
+                      reports.find(
+                        (r) =>
+                          r.status === "PENDING" ||
+                          r.status === "VERIFIED" ||
+                          r.status === "SCHEDULED" ||
+                          r.status === "IN_PROGRESS"
+                      )?.status === "VERIFIED"
+                        ? "text-emerald-400"
+                        : reports.find(
+                              (r) =>
+                                r.status === "PENDING" ||
+                                r.status === "VERIFIED" ||
+                                r.status === "SCHEDULED" ||
+                                r.status === "IN_PROGRESS"
+                            )?.status === "PENDING"
+                          ? "text-amber-400"
+                          : "text-blue-400"
+                    }`}
+                  >
+                    {
+                      reports.find(
+                        (r) =>
+                          r.status === "PENDING" ||
+                          r.status === "VERIFIED" ||
+                          r.status === "SCHEDULED" ||
+                          r.status === "IN_PROGRESS"
+                      )?.status
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link
             href="/dashboard/user/report"
             className="group relative overflow-hidden bg-gradient-to-br from-emerald-800 to-emerald-900 rounded-2xl p-8 hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.02]"
@@ -150,6 +359,52 @@ export default function UserDashboardPage() {
               </p>
               <div className="mt-6 inline-flex items-center text-white font-semibold">
                 <span>Get Started</span>
+                <TrendingUp className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/dashboard/user/reports"
+            className="group relative overflow-hidden bg-gradient-to-br from-blue-800 to-blue-900 rounded-2xl p-8 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:scale-[1.02]"
+          >
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-20 -mt-20"></div>
+            <div className="relative">
+              <div className="inline-flex p-3 bg-white/10 rounded-xl mb-4">
+                <FileText className="w-7 h-7 text-white" />
+              </div>
+              <h4 className="text-white font-bold text-2xl mb-2">
+                View All Reports
+              </h4>
+              <p className="text-blue-100 text-base leading-relaxed">
+                Browse through all your submitted waste reports and track their
+                status
+              </p>
+              <div className="mt-6 inline-flex items-center text-white font-semibold">
+                <span>View Reports</span>
+                <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/dashboard/leaderboard"
+            className="group relative overflow-hidden bg-gradient-to-br from-amber-800 to-amber-900 rounded-2xl p-8 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-300 hover:scale-[1.02]"
+          >
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-20 -mt-20"></div>
+            <div className="relative">
+              <div className="inline-flex p-3 bg-white/10 rounded-xl mb-4">
+                <TrendingUp className="w-7 h-7 text-white" />
+              </div>
+              <h4 className="text-white font-bold text-2xl mb-2">
+                Leaderboard
+              </h4>
+              <p className="text-amber-100 text-base leading-relaxed">
+                See your rank and compete with other contributors in your
+                community
+              </p>
+              <div className="mt-6 inline-flex items-center text-white font-semibold">
+                <span>View Rankings</span>
                 <TrendingUp className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -179,11 +434,22 @@ export default function UserDashboardPage() {
         <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 rounded-2xl p-6 md:p-8">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-white">Recent Activity</h3>
-            {reports.length > 0 && (
-              <span className="text-sm text-slate-400 font-medium">
-                {reports.length} total reports
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {reports.length > 0 && (
+                <span className="text-sm text-slate-400 font-medium">
+                  Showing {Math.min(reports.length, 10)} of {stats.total}
+                </span>
+              )}
+              {stats.total > 10 && (
+                <Link
+                  href="/dashboard/user/reports"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-all font-medium text-sm"
+                >
+                  View All
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -212,16 +478,17 @@ export default function UserDashboardPage() {
               {reports.map((report) => {
                 const color = getCategoryColor(report.category);
                 return (
-                  <div
+                  <Link
                     key={report.id}
-                    className="group bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-slate-600 rounded-xl p-5 transition-all duration-300"
+                    href={`/dashboard/user/reports/${report.id}`}
+                    className="group block bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-slate-600 rounded-xl p-5 transition-all duration-300"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-1">
                         <div className={`p-3 bg-${color}-500/10 rounded-lg`}>
                           <FileText className={`w-5 h-5 text-${color}-400`} />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="text-white font-semibold text-lg capitalize">
                             {report.category.toLowerCase()} Waste
                           </p>
@@ -240,19 +507,22 @@ export default function UserDashboardPage() {
                           </div>
                         </div>
                       </div>
-                      <span
-                        className={`px-4 py-2 rounded-lg text-sm font-semibold ${
-                          report.status === "VERIFIED"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : report.status === "PENDING"
-                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                              : "bg-red-500/10 text-red-400 border border-red-500/20"
-                        }`}
-                      >
-                        {report.status}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+                            report.status === "VERIFIED"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : report.status === "PENDING"
+                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                          }`}
+                        >
+                          {report.status}
+                        </span>
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
