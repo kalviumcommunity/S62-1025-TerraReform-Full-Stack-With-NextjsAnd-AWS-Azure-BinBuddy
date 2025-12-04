@@ -1,14 +1,11 @@
 // ============================================
-// FILE 3: src/lib/workers/assignmentWorker.ts
+// FILE: src/lib/workers/assignmentWorker.ts
 // ============================================
-// WHY: Core logic for assigning reports to volunteers
-// WHAT: Called when a report is created, selects volunteers and notifies them
 
 import { prisma } from "@/lib/prisma";
 import { assignmentManager } from "../assignment/redisManager";
 import { realtimeEmitter } from "../realtime/eventEmitter";
 
-// 🎯 CONFIGURATION: Change this to assign more/fewer volunteers per report
 const NUM_VERIFIERS_PER_REPORT = 1;
 
 interface AssignmentResult {
@@ -17,10 +14,6 @@ interface AssignmentResult {
   message?: string;
 }
 
-/**
- * Main function: Assigns a report to N volunteers
- * Called after report creation
- */
 export async function assignReportToVolunteers(
   reportId: string
 ): Promise<AssignmentResult> {
@@ -82,12 +75,50 @@ export async function assignReportToVolunteers(
     }
 
     console.log(
-      `👥 Selected ${selectedIds.length} volunteers: ${selectedIds.join(", ")}`
+      `👥 Selected ${selectedIds.length} volunteers from Redis: ${selectedIds.join(", ")}`
     );
 
-    // 4. Create assignment records in database
+    // 4. VALIDATE volunteers exist in database
+    const validVolunteers = await prisma.user.findMany({
+      where: {
+        id: { in: selectedIds },
+        role: "volunteer",
+      },
+      select: { id: true },
+    });
+
+    const validVolunteerIds = validVolunteers.map((v) => v.id);
+
+    const invalidIds = selectedIds.filter(
+      (id) => !validVolunteerIds.includes(id)
+    );
+
+    if (invalidIds.length > 0) {
+      console.warn(
+        `⚠️  Found ${invalidIds.length} invalid volunteer IDs in Redis: ${invalidIds.join(", ")}`
+      );
+      console.warn(`⚠️  Run: npx tsx scripts/sync-volunteers.ts to fix Redis`);
+    }
+
+    if (validVolunteerIds.length === 0) {
+      console.error(`❌ None of the selected volunteers exist in database`);
+      console.error(
+        `❌ Run: npx tsx scripts/sync-volunteers.ts to sync Redis with DB`
+      );
+      return {
+        success: false,
+        assigned: [],
+        message: "Selected volunteers not found. Redis needs sync.",
+      };
+    }
+
+    console.log(
+      `✅ Validated ${validVolunteerIds.length} volunteers exist in DB`
+    );
+
+    // 5. Create assignment records (only for valid volunteers)
     const created = await prisma.assignment.createMany({
-      data: selectedIds.map((volunteerId) => ({
+      data: validVolunteerIds.map((volunteerId) => ({
         reportId,
         volunteerId,
         status: "PENDING",
@@ -97,25 +128,27 @@ export async function assignReportToVolunteers(
 
     console.log(`💾 Created ${created.count} new assignment records in DB`);
 
-    // 5. Update Redis tracking
-    await assignmentManager.assignReport(reportId, selectedIds);
+    // 6. Update Redis tracking
+    await assignmentManager.assignReport(reportId, validVolunteerIds);
 
-    // 6. Update report assignment count
+    // 7. Update report assignment count
     await prisma.report.update({
       where: { id: reportId },
-      data: { assignedCount: alreadyAssigned.length + selectedIds.length },
+      data: {
+        assignedCount: alreadyAssigned.length + validVolunteerIds.length,
+      },
     });
 
-    // 7. Send real-time notifications
-    for (const volunteerId of selectedIds) {
+    // 8. Send real-time notifications
+    for (const volunteerId of validVolunteerIds) {
       realtimeEmitter.notifyNewAssignment(volunteerId, reportId);
     }
 
     console.log(
-      `✅ Successfully assigned report ${reportId} to ${selectedIds.length} volunteers\n`
+      `✅ Successfully assigned report ${reportId} to ${validVolunteerIds.length} volunteers\n`
     );
 
-    return { success: true, assigned: selectedIds };
+    return { success: true, assigned: validVolunteerIds };
   } catch (error) {
     console.error(`❌ Assignment error for report ${reportId}:`, error);
     return {
