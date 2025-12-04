@@ -1,10 +1,11 @@
 // ============================================
-// FILE 1: src/lib/assignment/redisManager.ts
+// FILE: src/lib/assignment/redisManager.ts
 // ============================================
 // WHY: Handles fast volunteer selection and workload tracking
 // WHAT: Uses Redis sorted sets for O(log n) volunteer selection
 
 import { Redis } from "ioredis";
+import { prisma } from "@/lib/prisma";
 
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
@@ -148,14 +149,51 @@ export class AssignmentManager {
 
   /**
    * Check if report is assigned to volunteer
+   * NOW CHECKS DATABASE AS SOURCE OF TRUTH
    */
   async isAssigned(reportId: string, volunteerId: string): Promise<boolean> {
-    return (
-      (await redis.sismember(
-        this.VOLUNTEER_REPORTS_KEY(volunteerId),
-        reportId
-      )) === 1
-    );
+    try {
+      console.log(
+        `🔍 Checking if volunteer ${volunteerId} is assigned to report ${reportId}`
+      );
+
+      // Check database as source of truth
+      const dbAssignment = await prisma.assignment.findUnique({
+        where: {
+          reportId_volunteerId: { reportId, volunteerId },
+        },
+        select: { status: true },
+      });
+
+      console.log(
+        `📊 DB Assignment status:`,
+        dbAssignment?.status || "NOT FOUND"
+      );
+
+      // If assignment doesn't exist in DB, reject
+      if (!dbAssignment) {
+        console.log(`❌ No assignment found in DB`);
+        return false;
+      }
+
+      // Only PENDING or VIEWED assignments are valid
+      if (dbAssignment.status === "COMPLETED") {
+        console.log(`❌ Assignment already COMPLETED`);
+        return false;
+      }
+
+      if (dbAssignment.status === "EXPIRED") {
+        console.log(`❌ Assignment EXPIRED`);
+        return false;
+      }
+
+      // PENDING or VIEWED = valid
+      console.log(`✅ Assignment is valid (${dbAssignment.status})`);
+      return true;
+    } catch (error) {
+      console.error("❌ Error checking assignment:", error);
+      return false;
+    }
   }
 
   /**
