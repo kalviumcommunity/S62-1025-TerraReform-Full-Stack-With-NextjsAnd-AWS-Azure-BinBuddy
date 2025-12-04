@@ -3,6 +3,7 @@
 
 import { useState, ChangeEvent } from "react";
 import { X, MapPin, User, Calendar, Image as ImageIcon } from "lucide-react";
+import { formatDateTime, getMinDateTime } from "@/lib/dateUtils";
 
 interface TaskLocation {
   address: string;
@@ -183,16 +184,38 @@ export default function TaskModal({ task, onClose, onAction }: TaskModalProps) {
             </div>
           )}
 
-          {/* Schedule */}
+          {/* Schedule - ✅ Using imported formatDateTime */}
           {task.scheduledFor && (
             <div>
               <h4 className="text-sm font-semibold text-slate-400 mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Scheduled For
               </h4>
-              <p className="text-white">
-                {new Date(task.scheduledFor).toLocaleString()}
+              <p className="text-white text-lg font-semibold">
+                {formatDateTime(task.scheduledFor)}
               </p>
+            </div>
+          )}
+
+          {/* Started At */}
+          {task.startedAt && (
+            <div>
+              <h4 className="text-sm font-semibold text-slate-400 mb-2 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Started At
+              </h4>
+              <p className="text-white">{formatDateTime(task.startedAt)}</p>
+            </div>
+          )}
+
+          {/* Completed At */}
+          {task.completedAt && (
+            <div>
+              <h4 className="text-sm font-semibold text-slate-400 mb-2 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Completed At
+              </h4>
+              <p className="text-white">{formatDateTime(task.completedAt)}</p>
             </div>
           )}
 
@@ -228,7 +251,7 @@ export default function TaskModal({ task, onClose, onAction }: TaskModalProps) {
             </div>
           )}
 
-          {/* Schedule Form */}
+          {/* Schedule Form - ✅ Using imported functions */}
           {canSchedule && actionType === "schedule" && (
             <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
               <h4 className="text-white font-semibold mb-3">
@@ -238,21 +261,33 @@ export default function TaskModal({ task, onClose, onAction }: TaskModalProps) {
                 type="datetime-local"
                 value={scheduleDate}
                 onChange={handleScheduleDateChange}
-                className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                min={getMinDateTime()}
+                className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition"
               />
+              {scheduleDate && (
+                <p className="text-sm text-slate-400 mt-2">
+                  Will be scheduled for:{" "}
+                  {formatDateTime(new Date(scheduleDate).toISOString())}
+                </p>
+              )}
               <div className="flex gap-2 mt-3">
                 <button
-                  onClick={() =>
-                    handleAction("schedule", { scheduledFor: scheduleDate })
-                  }
+                  onClick={() => {
+                    // Convert to ISO format before sending
+                    const isoDate = new Date(scheduleDate).toISOString();
+                    handleAction("schedule", { scheduledFor: isoDate });
+                  }}
                   disabled={!scheduleDate || loading}
-                  className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg disabled:opacity-50"
+                  className="flex-1 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  Confirm Schedule
+                  {loading ? "Scheduling..." : "Confirm Schedule"}
                 </button>
                 <button
-                  onClick={() => setActionType(null)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg"
+                  onClick={() => {
+                    setActionType(null);
+                    setScheduleDate("");
+                  }}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition"
                 >
                   Cancel
                 </button>
@@ -270,19 +305,22 @@ export default function TaskModal({ task, onClose, onAction }: TaskModalProps) {
                 value={notes}
                 onChange={handleNotesChange}
                 placeholder="Add any notes about the collection..."
-                className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 min-h-[100px]"
+                className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 min-h-[100px] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition"
               />
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => handleAction("complete", { notes })}
                   disabled={loading}
-                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg disabled:opacity-50"
+                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  Mark as Complete
+                  {loading ? "Completing..." : "Mark as Complete"}
                 </button>
                 <button
-                  onClick={() => setActionType(null)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg"
+                  onClick={() => {
+                    setActionType(null);
+                    setNotes("");
+                  }}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition"
                 >
                   Cancel
                 </button>
