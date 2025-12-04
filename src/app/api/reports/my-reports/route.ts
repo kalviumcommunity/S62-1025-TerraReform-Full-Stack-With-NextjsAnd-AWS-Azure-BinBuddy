@@ -1,3 +1,5 @@
+// src/app/api/reports/my-reports/route.ts
+
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendSuccess, sendError } from "@/lib/responseHandler";
@@ -10,10 +12,14 @@ export async function GET(req: NextRequest) {
       return sendError("Unauthorized", "AUTH_ERROR", 401);
     }
 
+    // Check if the request wants all reports or just recent ones
+    const url = new URL(req.url);
+    const allReports = url.searchParams.get("all") === "true";
+
     const reports = await prisma.report.findMany({
       where: { reporterId: String(user.id) },
       orderBy: { createdAt: "desc" },
-      take: 10, // Latest 10
+      ...(allReports ? {} : { take: 10 }), // Only limit to 10 if not requesting all
       include: {
         images: true, // Include associated images
       },
