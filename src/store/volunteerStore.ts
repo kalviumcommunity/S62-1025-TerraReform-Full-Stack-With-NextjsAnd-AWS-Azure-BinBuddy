@@ -52,6 +52,7 @@ interface VolunteerState {
   verificationNote: string;
   isVerifying: boolean;
   statusFilter: "VERIFIED" | "REJECTED";
+  lastError: string | null; // 🆕 Added to store error messages
 
   // Actions
   fetchStats: () => Promise<void>;
@@ -96,6 +97,7 @@ export const useVolunteerStore = create<VolunteerState>((set, get) => ({
   verificationNote: "",
   isVerifying: false,
   statusFilter: "VERIFIED",
+  lastError: null, // 🆕 Initialize error state
 
   fetchStats: async () => {
     try {
@@ -114,7 +116,6 @@ export const useVolunteerStore = create<VolunteerState>((set, get) => ({
     set({ loading: true });
     try {
       const { pendingPagination } = get();
-      // 🎯 Changed from /pending to /queue
       const response = await fetch(
         `/api/volunteer/queue?page=${page}&limit=${pendingPagination.limit}`
       );
@@ -162,8 +163,14 @@ export const useVolunteerStore = create<VolunteerState>((set, get) => ({
   setStatusFilter: (status) => set({ statusFilter: status }),
 
   verifyReport: async (reportId, status, note) => {
-    set({ isVerifying: true });
+    set({ isVerifying: true, lastError: null }); // 🆕 Clear previous errors
     try {
+      console.log("🚀 Sending verification request:", {
+        reportId,
+        status,
+        note,
+      });
+
       const response = await fetch("/api/volunteer/reports/verify", {
         method: "POST",
         headers: {
@@ -178,19 +185,35 @@ export const useVolunteerStore = create<VolunteerState>((set, get) => ({
 
       const result = await response.json();
 
+      console.log("📥 Verification response:", result);
+
       if (result.success) {
-        set({ isVerifying: false, selectedReport: null, verificationNote: "" });
+        console.log("✅ Verification successful");
+        set({
+          isVerifying: false,
+          selectedReport: null,
+          verificationNote: "",
+          lastError: null,
+        });
         // Refresh data
         get().fetchStats();
         get().fetchPendingReports();
         return true;
       } else {
-        set({ isVerifying: false });
+        // 🆕 Store the error message
+        const errorMessage =
+          result.message || result.error || "Verification failed";
+        console.error("❌ Verification failed:", errorMessage);
+        set({ isVerifying: false, lastError: errorMessage });
+        alert(`Verification failed: ${errorMessage}`); // 🆕 Show error to user
         return false;
       }
     } catch (error) {
-      console.error("Verification error:", error);
-      set({ isVerifying: false });
+      console.error("❌ Verification error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Network error";
+      set({ isVerifying: false, lastError: errorMessage });
+      alert(`Verification error: ${errorMessage}`); // 🆕 Show error to user
       return false;
     }
   },
@@ -200,6 +223,7 @@ export const useVolunteerStore = create<VolunteerState>((set, get) => ({
       selectedReport: null,
       verificationNote: "",
       isVerifying: false,
+      lastError: null, // 🆕 Clear error on reset
     });
   },
 }));
