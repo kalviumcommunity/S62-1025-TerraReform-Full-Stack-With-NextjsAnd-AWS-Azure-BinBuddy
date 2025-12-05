@@ -2,8 +2,8 @@
 import { create } from "zustand";
 
 interface LeaderboardUser {
-  verificationsCount: ReactNode;
-  verifiedReports: ReactNode;
+  verificationsCount: number;
+  verifiedReports: number;
   id: string;
   name: string;
   email: string;

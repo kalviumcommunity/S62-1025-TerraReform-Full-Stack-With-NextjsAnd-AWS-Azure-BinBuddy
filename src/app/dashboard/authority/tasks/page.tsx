@@ -24,11 +24,7 @@ interface Report {
   category: string;
   reporter?: Reporter;
 }
-interface QuickActionData {
-  scheduledFor?: string;
-  notes?: string;
-  [key: string]: unknown;
-}
+
 interface Task {
   id: string;
   status: string;

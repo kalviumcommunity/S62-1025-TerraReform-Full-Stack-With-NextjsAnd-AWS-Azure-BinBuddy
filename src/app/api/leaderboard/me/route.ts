@@ -7,7 +7,6 @@ export async function GET(req: NextRequest) {
   try {
     // Get user ID from headers (set by middleware)
     const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
 
     // If not authenticated, return null (not an error)
     if (!userId) {
