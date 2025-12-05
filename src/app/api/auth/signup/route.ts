@@ -85,7 +85,8 @@ export async function POST(req: Request) {
     console.log("User created successfully:", newUser.id);
 
     // Build verification URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
     console.log("Verification URL:", verificationUrl);

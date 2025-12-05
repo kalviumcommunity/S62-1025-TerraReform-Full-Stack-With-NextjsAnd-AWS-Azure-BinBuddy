@@ -2,7 +2,7 @@
 
 // Helper function to get the base URL based on environment
 const getBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+  return process.env.NEXT_PUBLIC_API_BASE_URL;
 };
 
 export const welcomeTemplate = (userName: string) => {
