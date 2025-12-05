@@ -2,8 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handleError } from "@/lib/errorHandler";
-import { sendEmail } from "@lib/email-sender";
+
 import { welcomeTemplate } from "@/lib/email-template";
+import { sendEmail } from "@/lib/email-sender";
 
 export const runtime = "nodejs";
 
