@@ -168,7 +168,7 @@ export default function LeaderboardPage() {
             {topCityCommunity && (
               <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
                 <h2 className="text-xl text-white mb-2">
-                  Top City / Community in India
+                  Top State in India
                 </h2>
 
                 <p className="text-3xl text-emerald-400">
@@ -204,7 +204,7 @@ export default function LeaderboardPage() {
             <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
               <div className="p-6 border-b border-slate-700 flex items-center justify-between">
                 <h2 className="text-white font-semibold">
-                  Top Indian Cities & Communities
+                  Top Indian States
                 </h2>
 
                 <div className="flex gap-2">
@@ -251,7 +251,7 @@ export default function LeaderboardPage() {
 
               {topCityCommunities.length === 0 ? (
                 <p className="p-6 text-slate-500 text-center">
-                  No Indian city/community data available
+                  No Indian State/city data available
                 </p>
               ) : (
                 <div
@@ -268,7 +268,7 @@ export default function LeaderboardPage() {
                           Rank
                         </th>
                         <th className="px-6 py-3 text-left text-emerald-400">
-                          City / Community
+                          State
                         </th>
                         <th className="px-6 py-3 text-left text-emerald-400">
                           Locality
