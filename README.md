@@ -1918,3 +1918,5 @@ This Zustand architecture provides a **scalable, modular, and fully typed** stat
 ---
 
  
+
+updated .env and .env.local files to include SendGrid API key for email verification feature.
