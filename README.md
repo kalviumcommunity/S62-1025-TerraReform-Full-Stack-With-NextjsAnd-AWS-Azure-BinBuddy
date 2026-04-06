@@ -1,7 +1,7 @@
 # **BinBuddy** - Smart Waste Segregation & Management Platform
 
-BinBuddy is a smart, AI-driven waste management web application that encourages community-led waste segregation.  
-It provides real-time reporting, AI-based waste verification, and gamified incentives to promote sustainable waste practices.
+BinBuddy is a smart, waste management web application that encourages community-led waste segregation.  
+It provides real-time reporting, volunteer based waste verification, and gamified incentives to promote sustainable waste practices.
 
 ---
 
@@ -11,7 +11,7 @@ BinBuddy bridges this gap by providing an easy-to-use digital interface for user
 
 ### Solution
 A gamified web platform that:
-- Allows users to upload images of waste for AI verification (Gemini API)
+- Allows users to upload images of waste for volunteer verification
 - Awards points for verified waste reports.
 - Displays community leaderboards and badges
 - Enables authorities to track reports and manage collection
